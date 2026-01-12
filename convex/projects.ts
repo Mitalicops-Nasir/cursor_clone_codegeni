@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { verifyAuth } from "./auth";
+import { DayButton } from "react-day-picker";
 
 export const create = mutation({
   args: { name: v.string() },
@@ -43,5 +44,50 @@ export const get = query({
       .withIndex("by_owner", (q) => q.eq("ownerId", identity.subject))
       .order("desc")
       .collect();
+  },
+});
+
+export const getById = query({
+  args: {
+    id: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await verifyAuth(ctx);
+
+    const projects = await ctx.db.get("projects", args.id);
+
+    if (!projects) {
+      throw new Error("Project not found");
+    }
+
+    if (projects.ownerId !== identity.subject) {
+      throw new Error("Unautorized access to this project");
+    }
+
+    return projects;
+  },
+});
+
+export const rename = mutation({
+  args: {
+    id: v.id("projects"),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await verifyAuth(ctx);
+
+    const projects = await ctx.db.get("projects", args.id);
+
+    if (!projects) {
+      throw new Error("Project not found");
+    }
+
+    if (projects.ownerId !== identity.subject) {
+      throw new Error("Unautorized access to this project");
+    }
+
+    await ctx.db.patch("projects", args.id, {
+      name: args.name,
+    });
   },
 });
