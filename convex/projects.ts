@@ -1,7 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { verifyAuth } from "./auth";
-import { DayButton } from "react-day-picker";
 
 export const create = mutation({
   args: { name: v.string() },

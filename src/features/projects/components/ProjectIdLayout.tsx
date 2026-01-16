@@ -3,7 +3,7 @@
 import { Id } from "../../../../convex/_generated/dataModel";
 import Navbar from "./Navbar";
 
-import "allotment/dist/style.css";
+
 
 import { Allotment } from "allotment";
 
@@ -23,9 +23,9 @@ const ProjectIdLayout = ({
     <div className="w-full h-screen flex flex-col">
       <Navbar projectId={projectId} />
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
         <Allotment
-          className="flex flex-1 "
+          className="flex flex-1"
           defaultSizes={[DEFAULT_CONVERSATION_SIDEBAR_WIDTH, DEFAULT_MAIN_SIZE]}
         >
           <Allotment.Pane
