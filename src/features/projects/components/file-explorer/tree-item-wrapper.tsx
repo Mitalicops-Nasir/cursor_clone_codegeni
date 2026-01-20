@@ -39,8 +39,7 @@ const TreeItemWrapper = ({
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
-        <Button
-          variant="highlight"
+        <button
           onClick={onClick}
           onDoubleClick={onDoubleClick}
           onKeyDown={(e) => {
@@ -56,7 +55,7 @@ const TreeItemWrapper = ({
           style={{ paddingLeft: getItemPadding(level, item.type === "file") }}
         >
           {children}
-        </Button>
+        </button>
       </ContextMenuTrigger>
 
       <ContextMenuContent

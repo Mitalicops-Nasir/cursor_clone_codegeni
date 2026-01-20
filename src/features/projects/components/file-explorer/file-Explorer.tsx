@@ -20,7 +20,7 @@ import LoadingRow from "./LoadingRow";
 import Tree from "./tree";
 
 export const FileExplorer = ({ projectId }: { projectId: Id<"projects"> }) => {
-  const [isOpen, setOpen] = React.useState(false);
+  const [isOpen, setOpen] = React.useState(true);
   const [collapseKey, setCollapseKey] = React.useState(0);
 
   const [creating, setCreating] = React.useState<"file" | "folder" | null>(

@@ -1,3 +1,5 @@
+// COMPLEX STUFF
+
 import { useState } from "react";
 import { Doc, Id } from "../../../../../convex/_generated/dataModel";
 import {
@@ -15,6 +17,7 @@ import LoadingRow from "./LoadingRow";
 import { getItemPadding } from "./constants";
 import CreateInput from "./CreateInput";
 import RenameInput from "./renameInput";
+import { useEditor } from "@/features/editorState/hooks/use-editor";
 
 const Tree = ({
   item,
@@ -33,6 +36,8 @@ const Tree = ({
   const deleteFile = useDeleteFile();
   const createFile = useCreateFile();
   const createFolder = useCreateFolder();
+
+  const { openFile, closeTab, activeTabId } = useEditor(projectId);
 
   const folderContents = useFolderContents({
     projectId,
@@ -68,6 +73,8 @@ const Tree = ({
   if (item.type === "file") {
     const fileName = item.name;
 
+    const isActive = activeTabId === item._id;
+
     if (isRenaming) {
       return (
         <RenameInput
@@ -83,12 +90,13 @@ const Tree = ({
       <TreeItemWrapper
         item={item}
         level={level}
-        isActive={false}
-        onClick={() => {}}
-        onDoubleClick={() => {}}
+        isActive={isActive}
+        onClick={() => openFile(item._id, { pinned: false })}
+        onDoubleClick={() => openFile(item._id, { pinned: true })}
         onRename={() => setIsRenaming(true)}
         onDelete={() => {
           //todo: CLOSE FILE
+          closeTab(item._id);
           deleteFile({ id: item._id });
         }}
       >
@@ -106,7 +114,7 @@ const Tree = ({
         <ChevronRightIcon
           className={cn(
             "size-4 shrink-0 text-muted-foreground",
-            isOpen && "rotate-90"
+            isOpen && "rotate-90",
           )}
         />
 
@@ -152,8 +160,6 @@ const Tree = ({
       </>
     );
   }
-
-
 
   if (isRenaming) {
     return (
