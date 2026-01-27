@@ -13,7 +13,8 @@ const createTooltipForSelection = (state: EditorState): readonly Tooltip[] => {
 
   const isQuickEditActive = state.field(quickEditState);
 
-  if (isQuickEditActive) {
+  if (!
+    isQuickEditActive) {
     return [];
   }
 
@@ -24,17 +25,15 @@ const createTooltipForSelection = (state: EditorState): readonly Tooltip[] => {
       strictSide: false,
       create() {
         const dom = document.createElement("div");
-        dom.className =
-          "bg-popover text-popover-foreground z-50 rounded-sm border border-input p-2 shadow-md flex gap-2 text-sm";
+        dom.className = "bg-popover text-popover-foreground z-50 rounded-sm border border-input p-2 shadow-md flex items-center gap-2 text-sm";
         const addToChatBtn = document.createElement("button");
-        addToChatBtn.type = "button";
         addToChatBtn.textContent = "Add to Chat";
         addToChatBtn.className =
-          "font-sans p-1 px-2 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded-sm";
+          "font-sans p-1 px-2 hover:text-foreground/10 rounded-sm";
 
         const quickEditBtn = document.createElement("button");
         quickEditBtn.className =
-          "font-sans p-1 px-2 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded-sm";
+          "font-sans p-1 px-2 text-muted-foreground hover:text-foreground flex items-center gap-2 hover:bg-foreground/10 rounded-sm";
         const quickEditBtnText = document.createElement("span");
         quickEditBtnText.textContent = "Quick Edit";
 
@@ -55,7 +54,7 @@ const createTooltipForSelection = (state: EditorState): readonly Tooltip[] => {
 
         dom.appendChild(addToChatBtn);
         dom.appendChild(quickEditBtn);
-        return { dom };
+        return {dom}
       },
     },
   ];
