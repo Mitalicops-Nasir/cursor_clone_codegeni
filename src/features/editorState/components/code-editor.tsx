@@ -1,9 +1,6 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { EditorView, keymap } from "@codemirror/view";
-
-import { basicSetup } from "codemirror";
-import { javascript } from "@codemirror/lang-javascript";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { customTheme } from "../extensions/theme";
 import { getLanguageExtension } from "../extensions/language-extension";
@@ -11,6 +8,9 @@ import { indentWithTab } from "@codemirror/commands";
 import { minimap } from "../extensions/minimap";
 import { indentationMarkers } from "@replit/codemirror-indentation-markers";
 import { customSetup } from "../extensions/custom-setup";
+import { suggestion } from "../extensions/suggestion";
+import { quickEdit } from "../extensions/quick-edit";
+import { selectionTooltip } from "../extensions/selection-tooltip";
 
 interface Props {
   fileName: string;
@@ -21,7 +21,9 @@ interface Props {
 const CodeEditor = ({ fileName, initialValue = "", onChange }: Props) => {
   const editorRef = useRef<HTMLDivElement>(null);
 
-  const languageExtension = getLanguageExtension(fileName);
+  const languageExtension = useMemo(() => {
+    return getLanguageExtension(fileName);
+  }, [fileName]);
 
   const viewRef = useRef<EditorView>(null);
 
@@ -35,12 +37,17 @@ const CodeEditor = ({ fileName, initialValue = "", onChange }: Props) => {
         oneDark,
         customTheme,
         customSetup,
+        suggestion(fileName), //THIS IS COMPLEX EXTENSION(ALLOWS FOR AI AUTO COMPLETION)
+        quickEdit(fileName), // THIS TOO
+        selectionTooltip(), // THIS TOO
         keymap.of([indentWithTab]),
         minimap(),
         indentationMarkers(),
-        EditorView.updateListener.of((update) =>
-          onChange(update.state.doc.toString()),
-        ),
+        EditorView.updateListener.of((update) => {
+          if (update.docChanged) {
+            onChange(update.state.doc.toString());
+          }
+        }),
       ],
     });
     viewRef.current = view;

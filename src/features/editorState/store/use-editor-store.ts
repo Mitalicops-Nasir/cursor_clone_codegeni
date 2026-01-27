@@ -97,7 +97,7 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 
     const newTabs = openTabs.filter((id) => id !== fileId);
 
-    let newActiveTabId = activeTabId;
+    let newActiveTabId = activeTabId
 
     if (activeTabId === fileId) {
       if (newTabs.length === 0) {
@@ -109,13 +109,18 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
       }
     }
 
+
+
     tabs.set(projectId, {
       openTabs: newTabs,
       activeTabId: newActiveTabId,
       previewTabId: previewTabId === fileId ? null : previewTabId,
     });
 
+
     set({ tabs });
+
+
   },
 
   closeAllTabs: (projectId) => {

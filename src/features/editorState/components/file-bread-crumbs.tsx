@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect } from "react";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { useEditor } from "../hooks/use-editor";
 import { useFilePath } from "@/features/projects/hooks/use-files";
@@ -16,11 +18,13 @@ const FileBreadCrumbs = ({ projectId }: { projectId: Id<"projects"> }) => {
   const { activeTabId, openTabs, theWholeTabState } = useEditor(projectId);
 
   const filePath = useFilePath(activeTabId);
-  console.log("theAacive tab id in FileBreadCurmbs:",activeTabId);
+  console.log("theAacive tab id in FileBreadCurmbs:", activeTabId);
 
-  console.log("theWholeTabState in FileBreadCurmbs:",theWholeTabState);
+  console.log("theWholeTabState in FileBreadCurmbs:", theWholeTabState);
 
-
+  useEffect(() => {
+  console.log("RE-RENDER DETECTED");
+}, [theWholeTabState]);
 
   if (filePath === undefined || !activeTabId) {
     return (

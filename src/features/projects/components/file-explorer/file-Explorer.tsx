@@ -24,7 +24,7 @@ export const FileExplorer = ({ projectId }: { projectId: Id<"projects"> }) => {
   const [collapseKey, setCollapseKey] = React.useState(0);
 
   const [creating, setCreating] = React.useState<"file" | "folder" | null>(
-    null
+    null,
   );
 
   const project = useProject(projectId);
@@ -63,7 +63,7 @@ export const FileExplorer = ({ projectId }: { projectId: Id<"projects"> }) => {
           <ChevronRightIcon
             className={cn(
               "size-4 shrink-0 text-muted-foreground",
-              isOpen && "rotate-90"
+              isOpen && "rotate-90",
             )}
           />
 
@@ -127,12 +127,12 @@ export const FileExplorer = ({ projectId }: { projectId: Id<"projects"> }) => {
         )}
 
         {rootFiles?.map((item) => (
-           <Tree
+          <Tree
             key={`${item._id}-${collapseKey}`}
             item={item}
             level={0}
             projectId={projectId}
-           />
+          />
         ))}
       </ScrollArea>
     </div>

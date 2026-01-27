@@ -52,13 +52,18 @@ const Tab = ({
 
       <button
         onClick={(e) => {
-          (e.preventDefault(), e.stopPropagation, closeTab(fileId));
-          console.log("TAB CLOSED", fileId);
-         
+          /* * 🏆 BATTLE TROPHY: The Great Bubbling Bug of 2026 for me.
+           * * Why e.stopPropagation()?
+           * Without it, the click "bubbles" up to the parent <div>,
+           * which immediately calls setActiveTab() and re-opens the file
+           * we just tried to close. This kills the bubble at the source.
+           * * "Those who do not stop propagation are doomed to re-render it."
+           */
+          (e.preventDefault(), e.stopPropagation(), closeTab(fileId));
         }}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
-            (e.preventDefault(), e.stopPropagation, closeTab(fileId));
+            (e.preventDefault(), e.stopPropagation(), closeTab(fileId));
           }
         }}
         className={cn(
