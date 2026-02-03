@@ -2,8 +2,6 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { verifyAuth } from "./auth";
 import { Doc, Id } from "./_generated/dataModel";
-import { profileEnd } from "console";
-import { fi } from "date-fns/locale";
 
 export const getFiles = query({
   args: {
