@@ -40,6 +40,7 @@ import {
 import { Prompt } from "ai";
 import { tryLoadManifestWithRetries } from "next/dist/server/load-components";
 import ky from "ky";
+import PastConversationDialog from "./past-conversation-dialog";
 
 interface ConversationSidebarProps {
   projectId: Id<"projects">;
@@ -47,6 +48,7 @@ interface ConversationSidebarProps {
 
 const ConversationSidebar = ({ projectId }: { projectId: Id<"projects"> }) => {
   const [input, SetInput] = useState("");
+  const [pastConversationOpen, setPastConversationOpen] = useState(false);
   const [selectedConversationId, setSelectedConversationId] =
     useState<Id<"conversations"> | null>(null);
   const createConversation = useCreateConversation();
@@ -83,8 +85,9 @@ const ConversationSidebar = ({ projectId }: { projectId: Id<"projects"> }) => {
   const handleSubmit = async (message: PromptInputMessage) => {
     //IF PROCESSING AND NO NEW MESSAGE, THIS IS JUST A STOP FUNCTION
     if (isProcessing && !message.text) {
-      // await handleCancel();
-      //return;
+      await handleCancel();
+      SetInput("");
+      return;
     }
 
     let conversationId = activeConversationId;
@@ -113,85 +116,112 @@ const ConversationSidebar = ({ projectId }: { projectId: Id<"projects"> }) => {
     SetInput("");
   };
 
+  const handleCancel = async () => {
+    try {
+      await ky.post("/api/messages/cancel", {
+        json: { projectId },
+      });
+    } catch (error) {
+      toast.error("Failed to cancel message");
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full bg-sidebar">
-      <div className="h-8.75 flex items-center justify-between border-b">
-        <div className="text-sm truncate pl-3">
-          {activeConversation?.title ?? "Empty Conversation"}
+    <>
+      <PastConversationDialog
+        projectId={projectId}
+        open={pastConversationOpen}
+        onSelect={(conversationId) => setSelectedConversationId(conversationId)}
+        onOpenChange={() => setPastConversationOpen(false)}
+      />
+
+      <div className="flex flex-col h-full bg-sidebar">
+        <div className="h-8.75 flex items-center justify-between border-b">
+          <div className="text-sm truncate pl-3">
+            {activeConversation?.title ?? "Empty Conversation"}
+          </div>
+
+          <div className="flex items-center px-1 gap-1">
+            <Button
+              variant="highlight"
+              size="icon-xs"
+              onClick={() => setPastConversationOpen(true)}
+            >
+              <HistoryIcon className="size-3.5" />
+            </Button>
+
+            <Button
+              onClick={handleCreateConversation}
+              variant="highlight"
+              size="icon-xs"
+            >
+              <PlusIcon className="size-3.5" />
+            </Button>
+          </div>
         </div>
+        <Conversation className="flex-1">
+          <ConversationContent>
+            {conversationMessages?.map((message, messageIndex) => (
+              <Message key={message._id} from={message.role}>
+                <MessageContent>
+                  {message.status === "processing" ? (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <LoaderIcon className="size-4 animate-spin" />
+                      <span>Thinking...</span>
+                    </div>
+                  ) : message.status === "cancelled" ? (
+                    <span className="text-muted-foreground italic">
+                      Request cancelled
+                    </span>
+                  ) : (
+                    <MessageResponse>{message.content}</MessageResponse>
+                  )}
+                </MessageContent>
 
-        <div className="flex items-center px-1 gap-1">
-          <Button variant="highlight" size="icon-xs">
-            <HistoryIcon className="size-3.5" />
-          </Button>
+                {message.role === "assistant" &&
+                  message.status === "completed" &&
+                  messageIndex === (conversationMessages.length ?? 0) - 1 && (
+                    <MessageActions>
+                      <MessageAction
+                        onClick={() =>
+                          navigator.clipboard.writeText(message.content)
+                        }
+                        label="Copy"
+                      >
+                        <CopyIcon className="size-4" />
+                      </MessageAction>
+                    </MessageActions>
+                  )}
+              </Message>
+            ))}
+          </ConversationContent>
 
-          <Button
-            onClick={handleCreateConversation}
-            variant="highlight"
-            size="icon-xs"
-          >
-            <PlusIcon className="size-3.5" />
-          </Button>
+          <ConversationScrollButton />
+        </Conversation>
+
+        <div className="p-3">
+          <PromptInput onSubmit={handleSubmit} className="mt-2">
+            <PromptInputBody>
+              <PromptInputTextarea
+                placeholder="Ask Code Genie Anything..."
+                onChange={(e) => SetInput(e.target.value)}
+                value={input}
+                disabled={isProcessing}
+              />
+            </PromptInputBody>
+
+            <PromptInputFooter>
+              <PromptInputTools />
+
+              <PromptInputSubmit
+                disabled={isProcessing ? false : !input}
+                status={isProcessing ? "streaming" : undefined}
+              />
+            </PromptInputFooter>
+          </PromptInput>
         </div>
       </div>
-      <Conversation className="flex-1">
-        <ConversationContent>
-          {conversationMessages?.map((message, messageIndex) => (
-            <Message key={message._id} from={message.role}>
-              <MessageContent>
-                {message.status === "processing" ? (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <LoaderIcon className="size-4 animate-spin" />
-                    <span>Thinking...</span>
-                  </div>
-                ) : (
-                  <MessageResponse>{message.content}</MessageResponse>
-                )}
-              </MessageContent>
-
-              {message.role === "assistant" &&
-                message.status === "completed" &&
-                messageIndex === (conversationMessages.length ?? 0) - 1 && (
-                  <MessageActions>
-                    <MessageAction
-                      onClick={() =>
-                        navigator.clipboard.writeText(message.content)
-                      }
-                      label="Copy"
-                    >
-                      <CopyIcon className="size-4" />
-                    </MessageAction>
-                  </MessageActions>
-                )}
-            </Message>
-          ))}
-        </ConversationContent>
-
-        <ConversationScrollButton />
-      </Conversation>
-
-      <div className="p-3">
-        <PromptInput onSubmit={handleSubmit} className="mt-2">
-          <PromptInputBody>
-            <PromptInputTextarea
-              placeholder="Ask Code Genie Anything..."
-              onChange={(e) => SetInput(e.target.value)}
-              value={input}
-              disabled={isProcessing}
-            />
-          </PromptInputBody>
-
-          <PromptInputFooter>
-            <PromptInputTools />
-
-            <PromptInputSubmit
-              disabled={isProcessing ? false : !input}
-              status={isProcessing ? "streaming" : undefined}
-            />
-          </PromptInputFooter>
-        </PromptInput>
-      </div>
-    </div>
+    </>
   );
 };
 

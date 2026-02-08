@@ -46,6 +46,18 @@ export async function POST(request: Request) {
 
   //TODO: Check for processing messages
 
+  const processingMessages = await convex.query(
+    api.systemFunc.getProcessingMessages,
+    {
+      internalKey,
+      projectId: projectId as Id<"projects">,
+    },
+  );
+
+  if (processingMessages.length > 0) {
+    return NextResponse.json({ error: "Processing messages" }, { status: 400 });
+  }
+
   await convex.mutation(api.systemFunc.createMessage, {
     internalKey: internalKey,
     conversationId: conversationId as Id<"conversations">,
@@ -70,6 +82,9 @@ export async function POST(request: Request) {
     name: "message/sent",
     data: {
       messageId: assistantMessageId,
+      conversationId: conversationId as Id<"conversations">,
+      projectId: projectId as Id<"projects">,
+      message: message,
     },
   });
 
